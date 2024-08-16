@@ -4,11 +4,11 @@
     "slug": "SmartParking",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",  //
+    "icon": "./assets/start.webp",  
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png", // 
-      "resizeMode": "contain",  //cover
+      "image": "./assets/start.webp", 
+      "resizeMode": "cover",  
       "backgroundColor": "#ffffff"
     },
     "ios": {

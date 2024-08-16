@@ -1,21 +1,21 @@
-<<<<<<< HEAD
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CameraScreen from './src/CameraScreen';
-import HomeScreen from './src/HomeScreen'
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-=======
 import { StatusBar } from 'expo-status-bar';
 import { createRef, useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, View, Image, TouchableOpacity, Pressable, Modal } from 'react-native';
+import { Button, StyleSheet, Text, View, Image, TouchableOpacity, Pressable, Modal,ImageBackground } from 'react-native';
 import * as tf from "@tensorflow/tfjs";
 import '@tensorflow/tfjs-react-native';
 import { decodeJpeg, fetch } from '@tensorflow/tfjs-react-native';
 import * as FileSystem from 'expo-file-system';
 import { CameraView, useCameraPermissions, CameraCapturedPicture} from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
->>>>>>> 3abb06e5df108612e1832806d71af801d4429c3b
+
+import CameraScreen from './src/CameraScreen';
+import HomeScreen from './src/HomeScreen'
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+//import backgroundImg from './assets/background.png';
 
 export type RootStackParamList = {
   'Smart Parking Guide': undefined;
@@ -25,25 +25,14 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-<<<<<<< HEAD
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Smart Parking Guide">
-        <Stack.Screen name="Smart Parking Guide" component={HomeScreen} />
-        <Stack.Screen name="Camera" component={CameraScreen} options={{headerShown: false}} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
-=======
-  const [progress, setProgress] = useState<number>(0)
-  const [image, setImage] = useState<string | null>(null)
-  const [model, setModel] = useState<tf.LayersModel>()
-  const [prediction, setPrediction] = useState<string | null>(null)
-  const [permission, requestPermission] = useCameraPermissions()
-  const cameraRef = useRef(null)
-  const [loading, setLoading] = useState(true)
-  const [modalVisible, setModalVisible] = useState<boolean>(false)
+  const [progress, setProgress] = useState<number>(0);
+  const [image, setImage] = useState<string | null>(null);
+  const [model, setModel] = useState<tf.LayersModel>();
+  const [prediction, setPrediction] = useState<string | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const class_indices = {
     'Free Parking': 0, 
@@ -78,81 +67,80 @@ export default function App() {
     'Parking-Permit holders only-Weekdays-10am To 4pm-Sat-10am To 4pm': 30
   }
 
+
   const indexToClass = Object.fromEntries(
     Object.entries(class_indices).map(([k, v]) => [v, k])
   );
 
-  useEffect(()=> {
+  useEffect(() => {
     const loadModel = async () => {
       try {
-        await tf.ready()
-          const modelUrl =
-            'https://raw.githubusercontent.com/9saurabh9/smartparkmodel/main/model.json'
-          const model = await tf.loadLayersModel(modelUrl, { onProgress: (p) => {
-            setProgress(p)
-            console.log(p)
-            } 
-          })
-          setModel(model)
-          setLoading(false)
-      } catch(error) {
-        console.log("Error while trying to fetch model: ",error)
+        await tf.ready();
+        const modelUrl = 'https://raw.githubusercontent.com/9saurabh9/smartparkmodel/main/model.json';
+        const model = await tf.loadLayersModel(modelUrl, { 
+          onProgress: (p) => {
+            setProgress(p);
+            console.log(p);
+          } 
+        });
+        setModel(model);
+        setLoading(false);
+      } catch (error) {
+        console.log("Error while trying to fetch model: ", error);
       }
-    }
+    };
 
-    loadModel()
-  },[])
+    loadModel();
+  }, []);
 
   const processImage = async (imgUri: string) => {
-    let imgTensor
+    let imgTensor;
     try {
-      console.log("Fetching Image...")
+      console.log("Fetching Image...");
       const imgB64 = await FileSystem.readAsStringAsync(imgUri, {
         encoding: FileSystem.EncodingType.Base64,
-      })
-      console.log("After fetch process...")
-      const imgBuffer = tf.util.encodeString(imgB64, 'base64').buffer
-      console.log("Buffered...")
+      });
+      console.log("After fetch process...");
+      const imgBuffer = tf.util.encodeString(imgB64, 'base64').buffer;
+      console.log("Buffered...");
       const imageData = new Uint8Array(imgBuffer);
-      console.log("Unit Arrayed...")
-      imgTensor = decodeJpeg(imageData) // Decode as a tensor
-      console.log("Decding...")
-      imgTensor = tf.image.resizeBilinear(imgTensor, [150, 150]) // Resize to target size
-      console.log("Reszised...")
-      imgTensor = imgTensor.expandDims(0) // Add batch dimension
-      imgTensor = imgTensor.div(tf.scalar(255.0)) // Normalize to [0, 1]
-    } catch(error) {
-      console.log("Error while processing: ",error)
+      console.log("Unit Arrayed...");
+      imgTensor = decodeJpeg(imageData); // Decode as a tensor
+      console.log("Decoding...");
+      imgTensor = tf.image.resizeBilinear(imgTensor, [150, 150]); // Resize to target size
+      console.log("Resized...");
+      imgTensor = imgTensor.expandDims(0); // Add batch dimension
+      imgTensor = imgTensor.div(tf.scalar(255.0)); // Normalize to [0, 1]
+    } catch (error) {
+      console.log("Error while processing: ", error);
     }
 
-    return (imgTensor)!
-  }
+    return imgTensor!;
+  };
 
   const handleProcessImage = async (img: string) => {
     if (img) {
-      const imgTensor: tf.Tensor<tf.Rank> = await processImage(img)
+      const imgTensor: tf.Tensor<tf.Rank> = await processImage(img);
       try {
-        console.log("Processing...")
-        const predictions= await model?.predict(imgTensor)
+        console.log("Processing...");
+        const predictions = await model?.predict(imgTensor);
         //@ts-ignore
         const predictedClassIndex = predictions?.argMax(-1).dataSync()[0];
-      const predictedClassLabel = indexToClass[predictedClassIndex];
-      setPrediction(predictedClassLabel)
-      } catch(error) {
-        console.log(error)
+        const predictedClassLabel = indexToClass[predictedClassIndex];
+        setPrediction(predictedClassLabel);
+      } catch (error) {
+        console.log(error);
       }
     }
-  }
-// phone hang
+  };
+
   if (!permission) {
-    // Camera permissions are still loading.
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: "center"}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: "center" }}>
         <Text style={styles.message}>We need your permission to show the camera</Text>
         <Button onPress={requestPermission} title="grant permission" />
       </View>
@@ -161,20 +149,22 @@ export default function App() {
 
   const takePicture = async () => {
     try {
-      setModalVisible(true)
-      console.log("Taking Photo...")
+      setModalVisible(true);
+      console.log("Taking Photo...");
       //@ts-ignore
-      let photo: CameraCapturedPicture = await (cameraRef.current)!.takePictureAsync()
-      console.log("Photo Taken...")
-      const compressedPhoto = await compressImage(photo.uri)
-      console.log("Compressed...")
-      setImage(compressedPhoto.uri)
-      await handleProcessImage(compressedPhoto.uri)
-    } catch(error) {console.log(error)}
+      let photo: CameraCapturedPicture = await (cameraRef.current)!.takePictureAsync();
+      console.log("Photo Taken...");
+      const compressedPhoto = await compressImage(photo.uri);
+      console.log("Compressed...");
+      setImage(compressedPhoto.uri);
+      await handleProcessImage(compressedPhoto.uri);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const compressImage = async (uri: string) => {
-    console.log("Compressing...")
+    console.log("Compressing...");
     const manipulatedImage = await ImageManipulator.manipulateAsync(
       uri,
       [{ resize: { width: 300 } }],
@@ -183,64 +173,25 @@ export default function App() {
     return manipulatedImage;
   };
 
-  if(loading) {
+  if (loading) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: "center"}}>
-       <Text>Downloading ...</Text>
-       <Text>{parseInt(`${progress * 100 * 2}`) + "%"}</Text>
-       <StatusBar style="auto" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: "center" }}>
+        <Text>Downloading ...</Text>
+        <Text>{parseInt(`${progress * 100 * 2}`) + "%"}</Text>
+        <StatusBar style="auto" />
       </View>
-    )
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-      <View style={{height: '80%', borderRadius: 20, marginTop: 30, overflow: 'hidden'}}>
-        <CameraView 
-          style={styles.camera} 
-          //@ts-ignore
-          ref={cameraRef}
-        >
-          <View style={styles.buttonContainer}>
-          </View>
-        </CameraView>
-      </View>
-      <View style={styles.shutterContainer}>
-        <View style={styles.shutterButton}>
-          <Pressable style={
-            ({ pressed }) => [
-              {
-                width: pressed ? 56 : 60,
-                height: pressed ? 56 : 60,
-              },
-              {backgroundColor: 'white', borderRadius: 999},
-            ]}
-            onPress={takePicture}>  
-          </Pressable>
-        </View>
-      </View>
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Image src={image!}/>
-            <Text style={styles.modalHeadingText}>The sign says</Text>
-            <Text style={styles.modalPredText}>{prediction ?? "Analyzing..."}</Text>
-            <Pressable
-              style={styles.button}
-              onPress={() => {setModalVisible(!modalVisible); setPrediction(null)}}>
-              <Text style={styles.textStyle}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
+    <NavigationContainer>
+      <ImageBackground source={require('./assets/background.png')} style={styles.backgroundImage}>
+        <Stack.Navigator initialRouteName="Smart Parking Guide">
+          <Stack.Screen name="Smart Parking Guide" component={HomeScreen} />
+          <Stack.Screen name="Camera" component={CameraScreen} options={{ headerShown: false }} />
+        </Stack.Navigator>
+      </ImageBackground>
+    </NavigationContainer>
   );
 }
 
@@ -255,6 +206,12 @@ const styles = StyleSheet.create({
   message: {
     textAlign: 'center',
     paddingBottom: 10,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain', // or 'contain' based on your need
   },
   camera: {
     flex: 1,
@@ -290,8 +247,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   shutterInside: {
-    backgroundColor: 'white', 
-    flex: 1, 
+    backgroundColor: 'white',
+    flex: 1,
     borderRadius: 999,
   },
   centeredView: {
@@ -342,4 +299,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
->>>>>>> 3abb06e5df108612e1832806d71af801d4429c3b
