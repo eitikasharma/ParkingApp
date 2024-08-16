@@ -76,7 +76,7 @@ export default function App() {
     const loadModel = async () => {
       try {
         await tf.ready();
-        const modelUrl = 'https://raw.githubusercontent.com/9saurabh9/smartparkmodel/main/model.json';
+        const modelUrl = 'https://raw.githubusercontent.com/eitikasharma/Model-Build/main/model.json';
         const model = await tf.loadLayersModel(modelUrl, { 
           onProgress: (p) => {
             setProgress(p);
