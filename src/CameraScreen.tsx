@@ -416,6 +416,7 @@ const styles = StyleSheet.create({
   textStyle: {
     color: 'red',
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: 0.9,
+    fontSize: 15,
   },
 });
